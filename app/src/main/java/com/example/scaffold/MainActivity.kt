@@ -15,7 +15,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -24,8 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.scaffold.ui.theme.ScaffoldTheme
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -69,54 +66,61 @@ fun MyLayout() {
 val message = """
      A song I've recently learnt & loved
      I was glad when you showed me how to pray,
-     I knew how to" + bring my requests to you,
+     I knew how to bring my requests to you,
      There is a God in heaven who hears prayers,
      It's not in vain kneeling down in prayer
      It's not in vain calling unto His name
 """.trimIndent()
 
-@OptIn(DelicateCoroutinesApi::class)
 @Composable
 fun PhotographCard(modifier: Modifier = Modifier) {
     val new = remember { mutableStateOf(true) }
-
+    val coroutineScope = rememberCoroutineScope()
     val image =
-        if (new.value) (painterResource(id = R.drawable.img))
+        if (new.value) (painterResource(id = R.drawable.img_2))
         else
            (painterResource(id = R.drawable.myimg))
 
-    // We keep track if the message is expanded or not in this
-    // variable
-    var isExpanded by remember { mutableStateOf(false) }
-    // surfaceColor will be updated gradually from one color to the other
-
-    val surfaceColor: Color by animateColorAsState(targetValue =
-    if (isExpanded) MaterialTheme.colors.primary else MaterialTheme.colors.surface)
-
-    Row(
+    Column(
         modifier
+            .padding(start = 6.dp)
             .clip(RoundedCornerShape(4.dp))
             .background(MaterialTheme.colors.surface)
+            .clickable(onClick = {})
     ) {
-      Surface(
-          modifier.size(50.dp),
-          shape = CircleShape
-      ) {
-          Image(painter = image,contentDescription = "image")
-          GlobalScope.launch {
-              delay(2000)
-              new.value = !new.value
-          }
-       }
+        Surface(
+            modifier.size(150.dp),
+            shape = CircleShape
+        ) {
+            Image(painter = image, contentDescription = "image")
+            coroutineScope.launch {
+                delay(2000)
+                new.value = !new.value
+            }
+        }
+    }
+        Spacer(modifier = Modifier.height(2.dp))
+        // We keep track if the message is expanded or not in this
+        // variable
+        var isExpanded by remember { mutableStateOf(false) }
+        // surfaceColor will be updated gradually from one color to the other
+
+        val surfaceColor: Color by animateColorAsState(targetValue =
+        if (isExpanded) MaterialTheme.colors.primary else MaterialTheme.colors.surface)
+
         // We toggle the isExpanded variable when we click on this Column
         Column(
             modifier
                 .padding(start = 6.dp)
-                .align(Alignment.CenterVertically)
                 .clickable { isExpanded = !isExpanded }
         ) {
-            Text(text = "Kanga Woman", fontWeight = FontWeight.Bold)
+            Text(text = "Joy Kangangi", fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(4.dp))
+
+            /** LocalContentAlpha is defining opacity level of its children
+            //CompositionLocalProvider.
+            // It allows us to pass data implicitly through the composition tree.
+             **/
 
             /** LocalContentAlpha is defining opacity level of its children
             //CompositionLocalProvider.
@@ -138,9 +142,7 @@ fun PhotographCard(modifier: Modifier = Modifier) {
                 modifier = Modifier
                     .animateContentSize()
                     .padding(1.dp)
-
             ) {
-
                 Text(
                     text = message,
                     modifier = Modifier.padding(all = 4.dp),
@@ -151,8 +153,6 @@ fun PhotographCard(modifier: Modifier = Modifier) {
                 )
             }
         }
-        
-    }
 }
 
 
