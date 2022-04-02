@@ -1,5 +1,6 @@
 package com.example.scaffold
 
+/*
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,17 +15,19 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringArrayResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.scaffold.ui.theme.ScaffoldTheme
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +39,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                  MyLayout()
+                    MyLayout()
                 }
             }
         }
@@ -45,14 +48,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyLayout() {
-    var like by remember {
-        mutableStateOf(false)
-    }
-
-    val likeState: Color by animateColorAsState(
-        targetValue = if (like) Color.Red else Color.LightGray
-    )
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -60,12 +55,9 @@ fun MyLayout() {
                     Text(text = "About Me")
                 },
                 actions = {
-                IconButton(onClick = { like = !like }) {
-                    Icon(
-                        Icons.Filled.Favorite,
-                        tint = likeState,
-                        contentDescription = null)
-                }
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(Icons.Filled.Favorite, contentDescription = null)
+                    }
                 }
             )
         }
@@ -74,8 +66,21 @@ fun MyLayout() {
     }
 }
 
+val message = """
+     A song I've recently learnt & loved
+     I was glad when you showed me how to pray,
+     I knew how to bring my requests to you,
+     There is a God in heaven who hears prayers,
+     It's not in vain kneeling down in prayer
+     It's not in vain calling unto His name
+""".trimIndent()
+
 @Composable
 fun PhotographCard(modifier: Modifier = Modifier) {
+    val new = remember { mutableStateOf(true) }
+    //a CoroutineScope that follows this composable's lifecycle
+     val coroutineScope = rememberCoroutineScope()
+
     // We keep track if the message is expanded or not in this
     // variable
     var isExpanded by remember { mutableStateOf(false) }
@@ -90,19 +95,34 @@ fun PhotographCard(modifier: Modifier = Modifier) {
         else {
             (painterResource(id = R.drawable.myimg))
         }
-
-
     Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
-            .padding(6.dp)
+            .fillMaxWidth()
+            .padding(20.dp)
     ) {
         Image(
             painter = image,
             contentDescription = "My image",
-            modifier
-                .size(150.dp)
+            modifier.size(150.dp)
                 .clip(CircleShape)
+            /*
+             .clickable(onClick = {
+                coroutineScope.launch {
+                    delay(2000)
+                    new.value = !new.value
+                }
+            })
+           */
         )
+        coroutineScope.launch {
+            delay(2000)
+            new.value = !new.value
+            //display a placeholder before the actual image is loaded from the network(e.g)
+            coroutineScope.cancel()
+            // otherwise the coroutine will work infinitely and display images as animation
+            // at first it is stable but get messy giving a bad UI.
+        }
         Spacer(modifier = modifier.height(4.dp))
         Text(text = "Joy Kangangi", fontWeight = FontWeight.Bold, fontSize = 24.sp)
 
@@ -119,52 +139,34 @@ fun PhotographCard(modifier: Modifier = Modifier) {
             )
         }
         Surface(
-            /**
-             * animateContentSize will change the Surface size gradually
-            surfaceColor color will be changing gradually from primary
-            to surface*/
+            shape = MaterialTheme.shapes.medium,
+            elevation = 4.dp,
+            // surfaceColor color will be changing gradually from primary to surface
             modifier = modifier
+                .clickable { isExpanded = !isExpanded }
+                // animateContentSize will change the Surface size gradually
                 .animateContentSize()
+                .padding(1.dp)
                 .clip(RoundedCornerShape(3.dp)),
             color = surfaceColor
         ) {
-            Row(Modifier
-                .padding(4.dp),
-            Arrangement.SpaceAround) {
-                Text(
-                    text = message,
-                    // If the message is expanded, we display all its content
-                    // otherwise we only display the first line
-                    maxLines = if (isExpanded) Int.MAX_VALUE else 1,
-                    style = MaterialTheme.typography.body2,
-                    modifier = Modifier.wrapContentWidth()
-                )
-                OutlinedButton(onClick = { isExpanded = !isExpanded }) {
-                    Text(
-                        text = if (isExpanded) "Show Less"
-                        else {
-                            "Show More"
-                        }
-                    )
-                }
-            }
+            Text(
+                text = message,
+                modifier = modifier.padding(all = 4.dp),
+                // If the message is expanded, we display all its content
+                // otherwise we only display the first line
+                maxLines = if (isExpanded) Int.MAX_VALUE else 1,
+                style = MaterialTheme.typography.body2
+            )
         }
     }
 }
-
-const val message =
-    "A song I've recently learnt & loved \n"+
-            "I was glad when you showed me how to pray,\n"+
-            "I knew how to bring my requests to you,\n"+
-            "There is a God in heaven who hears prayers,\n"+
-            "It's not in vain kneeling down in prayer\n"+
-            "It's not in vain calling unto His name\n"
-
 
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     ScaffoldTheme {
-       MyLayout()
+        MyLayout()
     }
 }
+*/
