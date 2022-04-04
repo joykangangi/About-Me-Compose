@@ -5,20 +5,24 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,8 +40,41 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                  MyLayout()
+                    MyApp()
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun MyApp() {
+    //save each state surviving configuration changes (such as rotations) and process death.
+    var shouldShowOnBoarding by rememberSaveable { mutableStateOf(true) }
+
+    if (shouldShowOnBoarding) {
+        OnBoardingScreen(onExploreClicked = { shouldShowOnBoarding = false })
+    }
+    else {
+        MyLayout()
+    }
+}
+
+@Composable
+fun OnBoardingScreen(onExploreClicked:()-> Unit) {
+
+    Surface {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Welcome to my world!")
+            Button(
+                onClick = onExploreClicked ,
+                modifier = Modifier.padding(vertical = 24.dp)
+            ) {
+                Text(text = "Explore")
             }
         }
     }
@@ -83,7 +120,8 @@ fun PhotographCard(modifier: Modifier = Modifier) {
 
     val surfaceColor: Color by animateColorAsState(
         targetValue =
-        if (isExpanded) MaterialTheme.colors.primary else MaterialTheme.colors.surface
+        if (isExpanded) MaterialTheme.colors.primary else
+            MaterialTheme.colors.surface
     )
     val image =
         if (isExpanded) (painterResource(id = R.drawable.img_2))
@@ -91,10 +129,11 @@ fun PhotographCard(modifier: Modifier = Modifier) {
             (painterResource(id = R.drawable.myimg))
         }
 
-
     Column(
         modifier = modifier
-            .padding(6.dp)
+            .padding(6.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
             painter = image,
@@ -128,9 +167,16 @@ fun PhotographCard(modifier: Modifier = Modifier) {
                 .clip(RoundedCornerShape(3.dp)),
             color = surfaceColor
         ) {
-            Row(Modifier
-                .padding(4.dp),
-            Arrangement.SpaceAround) {
+            Row(
+                Modifier
+                    .padding(4.dp)
+                    .animateContentSize(
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                    ),
+            ) {
                 Text(
                     text = message,
                     // If the message is expanded, we display all its content
@@ -139,11 +185,14 @@ fun PhotographCard(modifier: Modifier = Modifier) {
                     style = MaterialTheme.typography.body2,
                     modifier = Modifier.wrapContentWidth()
                 )
-                OutlinedButton(onClick = { isExpanded = !isExpanded }) {
-                    Text(
-                        text = if (isExpanded) "Show Less"
-                        else {
-                            "Show More"
+                IconButton(onClick = { isExpanded = !isExpanded }) {
+                    Icon(
+                        imageVector =
+                        if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                        contentDescription = if (isExpanded) {
+                            stringResource(id = R.string.show_less)
+                        } else {
+                            stringResource(id = R.string.show_more)
                         }
                     )
                 }
@@ -152,19 +201,21 @@ fun PhotographCard(modifier: Modifier = Modifier) {
     }
 }
 
-const val message =
-    "A song I've recently learnt & loved \n"+
-            "I was glad when you showed me how to pray,\n"+
-            "I knew how to bring my requests to you,\n"+
-            "There is a God in heaven who hears prayers,\n"+
-            "It's not in vain kneeling down in prayer\n"+
-            "It's not in vain calling unto His name\n"
-
+val message = """
+ A song I've recently learnt & loved
+ I was glad 
+ when you showed me how to pray
+ I knew how to bring my requests to you
+ There is a God in heaven
+ who hears prayers
+ It's not in vain kneeling down in prayer
+ It's not in vain calling unto His name
+""".trimIndent()
 
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     ScaffoldTheme {
-       MyLayout()
+       MyApp()
     }
 }
